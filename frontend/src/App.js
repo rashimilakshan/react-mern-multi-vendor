@@ -36,6 +36,7 @@ import {
   ShopSettingsPage,
   ShopWithDrawMoneyPage,
   ShopInboxPage,
+  ShopCreateUser
 } from "./routes/ShopRoutes";
 import {
   AdminDashboardPage,
@@ -244,10 +245,10 @@ const App = () => {
           }
         />
          <Route
-          path="/dashboard-create-users"
+          path="/dashboad-create-user"
           element={
             <SellerProtectedRoute>
-              <ShopAllCoupouns />
+              <ShopCreateUser/>
             </SellerProtectedRoute>
           }
         />

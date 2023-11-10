@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const validRoles = ["Seller", "Manager"];
+
 const shopSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -30,6 +32,7 @@ const shopSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    enum: validRoles,
     default: "Seller",
   },
   avatar: {
