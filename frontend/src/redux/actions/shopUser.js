@@ -15,7 +15,7 @@ export const createShopUser =
       const config = {Headers :{"Content-type":"multipart/form-data"}};
 
       const { data } = await axios.post(
-        `${server}/userCreate/create-user`,
+        `${server}/userCreate/create-user-shop`,
        newForm,
        config
       );

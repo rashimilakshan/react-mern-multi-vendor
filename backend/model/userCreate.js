@@ -1,50 +1,89 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const shopUserSchema = new mongoose.Schema({
-  name: {
+const userShopSchema = new mongoose.Schema({
+  name:{
     type: String,
-    required: [true, "Please enter your shop user name!"],
+    required: [true, "Please enter your name!"],
   },
-  email: {
+  email:{
     type: String,
-    required: [true, "Please enter your shop user email!"],
+    required: [true, "Please enter your email!"],
   },
-  password: {
+  password:{
     type: String,
-    required: [true, "Please enter your shop user password!"],
+    required: [true, "Please enter your password"],
+    minLength: [4, "Password should be greater than 4 characters"],
+    select: false,
   },
- 
-  category: {
-    type: String,
-    required: [true, "Please enter your product category!"],
+  phoneNumber:{
+    type: Number,
   },
- 
-  images: [
+  addresses:[
     {
-      public_id: {
+      country: {
         type: String,
-        required: true,
       },
-      url: {
+      city:{
         type: String,
-        required: true,
       },
-    },
+      address1:{
+        type: String,
+      },
+      address2:{
+        type: String,
+      },
+      zipCode:{
+        type: Number,
+      },
+      addressType:{
+        type: String,
+      },
+    }
   ],
- 
-  shopId: {
+  role:{
     type: String,
-    required: true,
+    default: "ShopManager",
   },
-  shop: {
-    type: Object,
-    required: true,
-  },
- 
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
+  avatar:{
+    public_id: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+ },
+ createdAt:{
+  type: Date,
+  default: Date.now(),
+ },
+ resetPasswordToken: String,
+ resetPasswordTime: Date,
 });
 
-module.exports = mongoose.model("ShopUser", shopUserSchema);
+
+//  Hash password
+userShopSchema.pre("save", async function (next){
+  if(!this.isModified("password")){
+    next();
+  }
+
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
+// jwt token
+userShopSchema.methods.getJwtToken = function () {
+  return jwt.sign({ id: this._id}, process.env.JWT_SECRET_KEY,{
+    expiresIn: process.env.JWT_EXPIRES,
+  });
+};
+
+// compare password
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+module.exports = mongoose.model("Usershop", userShopSchema);

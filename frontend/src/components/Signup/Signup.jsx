@@ -14,6 +14,11 @@ const Singup = () => {
   const [visible, setVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
 
+  const isEmailValid = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleFileInputChange = (e) => {
     const reader = new FileReader();
 
@@ -28,6 +33,11 @@ const Singup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isEmailValid(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
     axios
       .post(`${server}/user/create-user`, { name, email, password, avatar })

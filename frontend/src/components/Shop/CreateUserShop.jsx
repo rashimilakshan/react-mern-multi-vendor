@@ -1,88 +1,91 @@
-import React, { useEffect, useState } from "react";
-import { AiOutlinePlusCircle } from "react-icons/ai";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { createShopUser } from "../../redux/actions/shopUser";
+import { React, useState } from "react";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import styles from "../../styles/styles";
+import { Link } from "react-router-dom";
+import { RxAvatar } from "react-icons/rx";
+import axios from "axios";
+import { server } from "../../server";
 import { toast } from "react-toastify";
 
-
-const CreateUserShop = () => {
-  const { seller } = useSelector((state) => state.seller);
-  
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const [images, setImages] = useState([]);
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
+const Singup = () => {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [avatar, setAvatar] = useState(null);
 
-    // useEffect(() => {
-    //   if (error) {
-    //     toast.error(error);
-    //   }
-    //   if (success) {
-    //     toast.success("Product created successfully!");
-    //     navigate("/dashboard");
-    //     window.location.reload();
-    //   }
-    // }, []);
-
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-
-    setImages([]);
-
-    files.forEach((file) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        if (reader.readyState === 2) {
-          setImages((old) => [...old, reader.result]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+  const isEmailValid = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleFileInputChange = (e) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (reader.readyState === 2) {
+        setAvatar(reader.result);
+      }
+    };
+
+    reader.readAsDataURL(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newForm = new FormData();
+    if (!isEmailValid(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
-    images.forEach((image) => {
-      newForm.set("images", image);
-    });
-    newForm.append("name", name);
-    newForm.append("email", email);
-    newForm.append("password", password);
-    newForm.append("category", category);
-    newForm.append("shopId", seller._id);
-    dispatch(createShopUser(newForm));
+    axios
+      .post(`${server}/userCreate/create-user-shop`, { name, email, password, avatar })
+      .then((res) => {
+        toast.success(res.data.message);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setRole("");
+        setAvatar();
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message);
+      });
   };
 
   return (
-    <div className="w-[90%] 800px:w-[50%] bg-white  shadow h-[80vh] rounded-[4px] p-3 overflow-y-scroll">
-      <h5 className="text-[30px] font-Poppins text-center">Create Shop User</h5>
-      {/* create product form */}
-      <form onSubmit={handleSubmit}>
-        <br />
-        <div>
-          <label className="pb-2">
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={name}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your product name..."
-          />
-        </div>
-        <br />
-        <div>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Register as a new user
+        </h2>
+      </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Full Name
+              </label>
+              <div className="mt-1">
+                <input
+                  type="text"
+                  name="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
@@ -101,76 +104,113 @@ const CreateUserShop = () => {
                 />
               </div>
             </div>
-        <br />
 
-        <div>
-          <label className="pb-2">
-            Password <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="password"
-            name="password"
-            value={password}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your product name..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Role <span className="text-red-500">*</span>
-          </label>
-          <select
-            className="w-full mt-2 border h-[35px] rounded-[5px]"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="Choose a category">Choose a category</option>
-            <option value="Manager">Manager</option>
-            <option value="Employee">Employee</option>
-          </select>
-        </div>
-
-        <br />
-        <div>
-          <label className="pb-2">
-            Upload Images <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="file"
-            name=""
-            id="upload"
-            className="hidden"
-            multiple
-            onChange={handleImageChange}
-          />
-          <div className="w-full flex items-center flex-wrap">
-            <label htmlFor="upload">
-              <AiOutlinePlusCircle size={30} className="mt-3" color="#555" />
-            </label>
-            {images &&
-              images.map((i) => (
-                <img
-                  src={i}
-                  key={i}
-                  alt=""
-                  className="h-[120px] w-[120px] object-cover m-2"
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  type={visible ? "text" : "password"}
+                  name="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
-              ))}
-          </div>
-          <br />
-          <div>
-            <input
-              type="submit"
-              value="Create"
-              className="mt-2 cursor-pointer appearance-none text-center block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
+                {visible ? (
+                  <AiOutlineEye
+                    className="absolute right-2 top-2 cursor-pointer"
+                    size={25}
+                    onClick={() => setVisible(false)}
+                  />
+                ) : (
+                  <AiOutlineEyeInvisible
+                    className="absolute right-2 top-2 cursor-pointer"
+                    size={25}
+                    onClick={() => setVisible(true)}
+                  />
+                )}
+              </div>
+            </div>
+
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Role
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  type="text"
+                  name="role"
+                  required
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="avatar"
+                className="block text-sm font-medium text-gray-700"
+              ></label>
+              <div className="mt-2 flex items-center">
+                <span className="inline-block h-8 w-8 rounded-full overflow-hidden">
+                  {avatar ? (
+                    <img
+                      src={avatar}
+                      alt="avatar"
+                      className="h-full w-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <RxAvatar className="h-8 w-8" />
+                  )}
+                </span>
+                <label
+                  htmlFor="file-input"
+                  className="ml-5 flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <span>Upload a file</span>
+                  <input
+                    type="file"
+                    name="avatar"
+                    id="file-input"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={handleFileInputChange}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full h-[40px] flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                Submit
+              </button>
+            </div>
+            <div className={`${styles.noramlFlex} w-full`}>
+              <h4>Already have an account?</h4>
+              <Link to="/login" className="text-blue-600 pl-2">
+                Sign In
+              </Link>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
 
-export default CreateUserShop;
+export default Singup;
